@@ -1,0 +1,242 @@
+/* ================================================================
+   gouravpandey.dev — "the bridge" · helm / deep-ocean ops design
+   Palette: deep sea navy base, Kubernetes-blue primary accent,
+   lantern amber secondary. Chrome: IBM Plex Mono. Body: Plex Sans.
+   PaperMod auto-bundles every file in assets/css/extended/.
+   ================================================================ */
+
+:root {
+  --sea-0: #060d18;   /* page background, deepest water */
+  --sea-1: #0b1626;   /* panels / cards */
+  --sea-2: #12233f;   /* raised surfaces, borders on hover */
+  --foam:  #dbe7f4;   /* primary text */
+  --mist:  #8ba3bf;   /* muted text */
+  --kblue: #326ce5;   /* kubernetes blue, primary accent */
+  --kblue-bright: #6a97f2;
+  --lantern: #f0a83c; /* amber, secondary accent */
+  --line:  #1a2c47;   /* hairline borders */
+}
+
+/* ---------- PaperMod dark-theme variable overrides ---------- */
+.dark {
+  --theme: var(--sea-0);
+  --entry: var(--sea-1);
+  --primary: var(--foam);
+  --secondary: var(--mist);
+  --tertiary: var(--sea-2);
+  --content: var(--foam);
+  --border: var(--line);
+  --code-bg: #0d1a2e;
+  --hljs-bg: #0d1a2e;
+}
+
+body {
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  background:
+    radial-gradient(1100px 520px at 75% -80px, rgba(50,108,229,.10), transparent 60%),
+    var(--sea-0);
+}
+code, pre, kbd, .post-meta, .bridge-eyebrow, .bridge-status,
+.home-section-head h2, .post-row-date, .post-row-tag, .helm-hint {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+a { color: var(--kblue-bright); }
+a:hover { color: var(--lantern); }
+
+/* ---------- header ---------- */
+.header { border-bottom: 1px solid var(--line); }
+.logo a { color: var(--kblue-bright); font-family: "IBM Plex Mono", monospace; }
+
+/* ================================================================
+   THE BRIDGE — hero
+   ================================================================ */
+.bridge {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: 2rem;
+  padding: 3.5rem 0 2.5rem;
+}
+.bridge-eyebrow { color: var(--mist); font-size: .85rem; margin: 0 0 .8rem; }
+.bridge-eyebrow .cmd { color: var(--lantern); }
+.bridge-title {
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  font-weight: 700; letter-spacing: -.02em;
+  margin: 0 0 .7rem; color: var(--foam);
+}
+.bridge-sub { color: var(--mist); font-size: 1.05rem; line-height: 1.65; max-width: 34rem; margin: 0 0 1.2rem; }
+.bridge-status { color: var(--kblue-bright); font-size: .8rem; letter-spacing: .04em; margin: 0 0 1.4rem; }
+.bridge-status .dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: #3ecf6e; margin-right: .55rem;
+  box-shadow: 0 0 8px rgba(62,207,110,.8);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse { 50% { opacity: .45; } }
+
+/* ================================================================
+   THE HELM
+   ================================================================ */
+.helm-wrap { text-align: center; }
+#helm {
+  width: min(100%, 520px);
+  height: auto;
+  cursor: grab;
+  touch-action: none;             /* needed for pointer-drag on touch */
+  outline: none;
+  filter: drop-shadow(0 0 34px rgba(50,108,229,.16));
+}
+#helm.grabbing { cursor: grabbing; }
+#helm:focus-visible { filter: drop-shadow(0 0 0 transparent) drop-shadow(0 0 14px rgba(240,168,60,.55)); }
+
+.rim-outer { fill: none; stroke: #1d3357; stroke-width: 24; }
+.rim-inner { fill: none; stroke: var(--kblue); stroke-width: 3; opacity: .85; }
+.rivet     { fill: var(--kblue-bright); opacity: .55; }
+
+.spoke  { stroke: #24406b; stroke-width: 13; stroke-linecap: round; }
+.handle { stroke: var(--kblue); stroke-width: 19; stroke-linecap: round; transition: stroke .18s ease; }
+
+.handle-link { cursor: pointer; }
+.handle-link:hover .handle,
+.handle-link:focus-visible .handle { stroke: var(--lantern); }
+.handle-link:hover .spoke { stroke: #33578f; }
+.handle.is-top { stroke: var(--lantern); }
+
+.handle-label {
+  fill: var(--mist); font-family: "IBM Plex Mono", monospace;
+  font-size: 15px; letter-spacing: .03em;
+  transition: fill .18s ease;
+}
+.handle-link:hover .handle-label,
+.handle-link:focus-visible .handle-label { fill: var(--lantern); }
+
+.hub      { fill: url(#hubGlow); stroke: var(--kblue); stroke-width: 3; }
+.hub-ring { fill: none; stroke: var(--line); stroke-width: 1.5; }
+.hub-dir  { fill: var(--lantern); font-size: 15px; }
+.hub-label {
+  fill: var(--foam); font-family: "IBM Plex Mono", monospace;
+  font-size: 17px; font-weight: 600; letter-spacing: .02em;
+}
+#hub-link { cursor: pointer; }
+#hub-link:hover .hub { stroke: var(--lantern); }
+
+.sonar {
+  fill: none; stroke: var(--kblue); stroke-width: 1.5; opacity: 0;
+  transform-origin: 320px 320px;
+  animation: sonar 6s ease-out infinite;
+}
+@keyframes sonar {
+  0%   { transform: scale(.4);  opacity: .35; }
+  70%  { transform: scale(1.5); opacity: 0; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.helm-hint { color: var(--mist); opacity: .55; font-size: .72rem; margin-top: .4rem; }
+
+/* ================================================================
+   SECTIONS — manifest & log
+   ================================================================ */
+.home-section { margin: 2.6rem 0; }
+.home-section-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: .55rem; margin-bottom: 1.1rem;
+  /* wave divider */
+  background:
+    repeating-linear-gradient(90deg, var(--line) 0 8px, transparent 8px 16px)
+    left bottom / 100% 1px no-repeat;
+  border-bottom: none;
+}
+.home-section-head h2 { font-size: 1rem; font-weight: 600; color: var(--foam); margin: 0; }
+.sec-mark { color: var(--kblue-bright); margin-right: .35rem; }
+.sec-dim  { color: var(--mist); font-weight: 400; }
+.home-section-link { font-family: "IBM Plex Mono", monospace; font-size: .8rem; }
+
+/* ---------- project cards ---------- */
+.projects-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+.project-card {
+  display: block; background: var(--sea-1);
+  border: 1px solid var(--line); border-radius: 10px;
+  padding: 1.1rem 1.2rem;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.project-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--kblue);
+  box-shadow: 0 8px 26px rgba(3, 10, 22, .55);
+}
+.project-card h3 { color: var(--foam); font-size: 1rem; margin: 0 0 .4rem; }
+.project-card p  { color: var(--mist); font-size: .88rem; line-height: 1.55; margin: 0 0 .6rem; }
+.project-card .card-tags { font-family: "IBM Plex Mono", monospace; font-size: .72rem; color: var(--kblue-bright); }
+
+/* ---------- post rows (captain's log) ---------- */
+.post-rows { display: flex; flex-direction: column; }
+.post-row {
+  display: flex; align-items: baseline; gap: 1rem;
+  padding: .55rem .4rem; border-radius: 6px;
+  border-bottom: 1px dashed var(--line);
+}
+.post-row:hover { background: var(--sea-1); }
+.post-row-date { color: var(--mist); font-size: .78rem; white-space: nowrap; }
+.post-row-title { color: var(--foam); flex: 1; font-size: .95rem; }
+.post-row:hover .post-row-title { color: var(--lantern); }
+.post-row-meta { display: flex; gap: .5rem; }
+.post-row-tag { color: var(--kblue-bright); font-size: .72rem; }
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (max-width: 820px) {
+  .bridge { grid-template-columns: 1fr; padding-top: 2rem; text-align: left; }
+  #helm { width: min(100%, 400px); }
+  .handle-label { font-size: 18px; } /* bigger targets/labels on small screens */
+}
+
+/* ================================================================
+   REDUCED MOTION — wheel static but fully usable
+   ================================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .sonar, .bridge-status .dot { animation: none; }
+  .project-card, .handle, .handle-label { transition: none; }
+  .project-card:hover { transform: none; }
+}
+
+/* ================================================================
+   WIDE LAYOUT PATCH
+   PaperMod caps everything at 720px. Widen the site shell for
+   desktop, keep article text at a readable measure.
+   ================================================================ */
+:root {
+  --main-width: 1200px;   /* was 720px — site shell, header, home */
+}
+.main { max-width: calc(var(--main-width) + var(--gap) * 2); }
+
+/* keep long-form reading comfortable: cap only article body text */
+.post-single .post-content,
+.post-single .post-header,
+.post-single .post-footer {
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* hero uses the new width: more breathing room, bigger wheel */
+.bridge {
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  gap: 3rem;
+  padding: 4rem 0 3rem;
+  min-height: min(78vh, 760px);
+}
+#helm { width: min(100%, 640px); }
+
+@media (min-width: 1400px) {
+  :root { --main-width: 1320px; }
+  #helm { width: min(100%, 700px); }
+}
+@media (max-width: 820px) {
+  .bridge { grid-template-columns: 1fr; min-height: unset; padding-top: 2rem; }
+  #helm { width: min(100%, 420px); }
+}

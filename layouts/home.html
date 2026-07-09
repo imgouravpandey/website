@@ -1,0 +1,320 @@
+{{- define "main" }}
+
+{{- /* ============================================================
+     THE BRIDGE — interactive helm hero
+     Drag the wheel to spin it (with inertia). Each of the 7
+     handles is a nav link. The hub shows whichever section is
+     pointing up; clicking the hub navigates there.
+     ============================================================ */}}
+<section class="bridge">
+  <div class="bridge-copy">
+    <p class="bridge-eyebrow">gourav@bridge:~$ <span class="cmd">helm status site</span></p>
+    <h1 class="bridge-title">Gourav Pandey</h1>
+    <p class="bridge-sub">I build and run cloud infrastructure — Kubernetes, AWS, Terraform, CI/CD. This site is my public notebook.</p>
+    <p class="bridge-status">
+      <span class="dot" aria-hidden="true"></span>STATUS: deployed&nbsp;&nbsp;·&nbsp;&nbsp;COURSE: steady&nbsp;&nbsp;·&nbsp;&nbsp;take the wheel&nbsp;→
+    </p>
+    <div class="bridge-social">
+      {{- partial "social_icons.html" (dict "align" "left") }}
+    </div>
+  </div>
+
+  <div class="helm-wrap" id="helm-wrap">
+    <svg id="helm" viewBox="0 0 640 640" role="group" aria-label="Ship's wheel navigation. Use left and right arrow keys to rotate, Enter to open the selected section." tabindex="0">
+      <defs>
+        <radialGradient id="hubGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#12233f"/>
+          <stop offset="100%" stop-color="#0b1626"/>
+        </radialGradient>
+      </defs>
+
+      <!-- faint sonar ring behind the wheel -->
+      <circle class="sonar" cx="320" cy="320" r="150" />
+
+      <!-- ROTATING GROUP -->
+      <g id="helm-rot">
+        <!-- outer rim -->
+        <circle class="rim-outer" cx="320" cy="320" r="205"/>
+        <circle class="rim-inner" cx="320" cy="320" r="180"/>
+        <!-- rivets on the rim, one per spoke gap -->
+        <g class="rivets" id="rivets"></g>
+        <!-- spokes + handles + labels injected by JS -->
+        <g id="spokes"></g>
+      </g>
+
+      <!-- NON-ROTATING HUB READOUT -->
+      <a id="hub-link" href="/blog/" aria-label="Open selected section">
+        <circle class="hub" cx="320" cy="320" r="62"/>
+        <circle class="hub-ring" cx="320" cy="320" r="46"/>
+        <text class="hub-dir" x="320" y="306" text-anchor="middle">↑</text>
+        <text class="hub-label" id="hub-label" x="320" y="336" text-anchor="middle">blog/</text>
+      </a>
+    </svg>
+    <p class="helm-hint" aria-hidden="true">drag to spin · click a handle or the hub</p>
+  </div>
+</section>
+
+{{- /* ---------- Featured projects: the cargo manifest ---------- */}}
+{{- $featured := where (where site.RegularPages "Section" "projects") "Params.featured" true }}
+{{- with $featured }}
+<section class="home-section">
+  <div class="home-section-head">
+    <h2><span class="sec-mark" aria-hidden="true">⎈</span> manifest <span class="sec-dim">» featured projects</span></h2>
+    <a class="home-section-link" href="/projects/">all →</a>
+  </div>
+  <div class="projects-grid">
+    {{- range first 4 . }}
+    {{- partial "project_card.html" . }}
+    {{- end }}
+  </div>
+</section>
+{{- end }}
+
+{{- /* ---------- Recent posts: the captain's log ---------- */}}
+{{- $posts := where site.RegularPages "Type" "in" site.Params.mainSections }}
+{{- with $posts }}
+<section class="home-section">
+  <div class="home-section-head">
+    <h2><span class="sec-mark" aria-hidden="true">⎈</span> log <span class="sec-dim">» recent entries</span></h2>
+    <a class="home-section-link" href="/blog/">all →</a>
+  </div>
+  <div class="post-rows">
+    {{- range first 5 . }}
+    {{- partial "post_row.html" . }}
+    {{- end }}
+  </div>
+</section>
+{{- end }}
+
+<script>
+(function () {
+  "use strict";
+  /* ============ CONFIG — edit your links here ============ */
+  var SECTIONS = [
+    { label: "blog/",     href: "/blog/" },
+    { label: "projects/", href: "/projects/" },
+    { label: "docs/",     href: "/docs/" },
+    { label: "about",     href: "/about/" },
+    { label: "github",    href: "https://github.com/imgouravpandey" },      /* TODO */
+    { label: "linkedin",  href: "https://www.linkedin.com/in/imgouravpandey/" },/* TODO */
+    { label: "rss",       href: "/index.xml" }
+  ];
+  /* Open wheel links in a new tab.
+     "all"      = every handle + hub opens a new tab (current setting)
+     "external" = only http(s) links (github, linkedin) open a new tab
+     "none"     = everything opens in the same tab */
+  var NEW_TAB = "all";
+  var IDLE_DPS = 360 / 80;      /* idle drift: one revolution / 80 s */
+  var SCROLL_FACTOR = 0.04;     /* deg of extra rotation per px scrolled */
+  var FRICTION = 0.985;         /* inertia decay per frame */
+
+  var svg = document.getElementById("helm");
+  if (!svg) return;
+  var rot = document.getElementById("helm-rot");
+  var spokesG = document.getElementById("spokes");
+  var rivetsG = document.getElementById("rivets");
+  var hubLabel = document.getElementById("hub-label");
+  var hubLink = document.getElementById("hub-link");
+
+  var N = SECTIONS.length, STEP = 360 / N;
+  var CX = 320, CY = 320;
+  var R_HUB = 62, R_RIM = 205, R_HANDLE_END = 268, R_LABEL = 296;
+
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------- build spokes, handles, labels, rivets ---------- */
+  var labelEls = [], handleEls = [];
+  function polar(r, deg) {
+    var a = deg * Math.PI / 180;
+    return [CX + r * Math.cos(a), CY + r * Math.sin(a)];
+  }
+  var NS = "http://www.w3.org/2000/svg";
+  function wantsNewTab(href) {
+    if (NEW_TAB === "all") return true;
+    if (NEW_TAB === "external") return /^https?:/.test(href);
+    return false;
+  }
+  function applyTarget(link, href) {
+    if (wantsNewTab(href)) {
+      link.setAttribute("target", "_blank");
+      link.setAttribute("rel", "noopener");
+    } else {
+      link.removeAttribute("target");
+    }
+  }
+  for (var i = 0; i < N; i++) {
+    var baseA = i * STEP - 90; /* handle 0 starts at top */
+    var a = document.createElementNS(NS, "a");
+    a.setAttribute("href", SECTIONS[i].href);
+    a.setAttribute("class", "handle-link");
+    applyTarget(a, SECTIONS[i].href);
+    a.setAttribute("aria-label", SECTIONS[i].label);
+    a.setAttribute("data-i", i);
+
+    var p1 = polar(R_HUB - 4, baseA), p2 = polar(R_RIM - 10, baseA);
+    var spoke = document.createElementNS(NS, "line");
+    spoke.setAttribute("x1", p1[0]); spoke.setAttribute("y1", p1[1]);
+    spoke.setAttribute("x2", p2[0]); spoke.setAttribute("y2", p2[1]);
+    spoke.setAttribute("class", "spoke");
+    a.appendChild(spoke);
+
+    var h1 = polar(R_RIM + 2, baseA), h2 = polar(R_HANDLE_END, baseA);
+    var handle = document.createElementNS(NS, "line");
+    handle.setAttribute("x1", h1[0]); handle.setAttribute("y1", h1[1]);
+    handle.setAttribute("x2", h2[0]); handle.setAttribute("y2", h2[1]);
+    handle.setAttribute("class", "handle");
+    a.appendChild(handle);
+    handleEls.push(handle);
+
+    var lp = polar(R_LABEL, baseA);
+    var lg = document.createElementNS(NS, "g");
+    lg.setAttribute("class", "label-g");
+    var t = document.createElementNS(NS, "text");
+    t.setAttribute("x", 0); t.setAttribute("y", 0);
+    t.setAttribute("text-anchor", "middle");
+    t.setAttribute("dominant-baseline", "middle");
+    t.setAttribute("class", "handle-label");
+    t.textContent = SECTIONS[i].label;
+    lg.appendChild(t);
+    lg._pos = lp;
+    a.appendChild(lg);
+    labelEls.push(lg);
+
+    spokesG.appendChild(a);
+
+    /* rivet between spokes */
+    var rv = polar((R_RIM + 180 + 25) / 2 - 0, baseA + STEP / 2);
+    var c = document.createElementNS(NS, "circle");
+    c.setAttribute("cx", rv[0]); c.setAttribute("cy", rv[1]);
+    c.setAttribute("r", 4); c.setAttribute("class", "rivet");
+    rivetsG.appendChild(c);
+  }
+
+  /* ---------- rotation state ---------- */
+  var angle = 0, velocity = 0, scrollOff = 0;
+  var dragging = false, lastA = 0, lastT = 0, dragDist = 0;
+  var suppressClick = false;
+
+  function apply() {
+    var total = angle + scrollOff;
+    rot.setAttribute("transform", "rotate(" + total + " " + CX + " " + CY + ")");
+    /* counter-rotate labels so text stays upright while orbiting */
+    for (var i = 0; i < N; i++) {
+      var lp = labelEls[i]._pos;
+      labelEls[i].setAttribute("transform",
+        "translate(" + lp[0] + " " + lp[1] + ") rotate(" + (-total) + ")");
+    }
+    /* which handle points up? */
+    var idx = ((Math.round(-total / STEP) % N) + N) % N;
+    if (hubLabel.textContent !== SECTIONS[idx].label) {
+      hubLabel.textContent = SECTIONS[idx].label;
+      hubLink.setAttribute("href", SECTIONS[idx].href);
+      applyTarget(hubLink, SECTIONS[idx].href);
+      for (var j = 0; j < N; j++) {
+        handleEls[j].classList.toggle("is-top", j === idx);
+      }
+    }
+  }
+
+  function pointerAngle(e) {
+    var r = svg.getBoundingClientRect();
+    var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    return Math.atan2(e.clientY - cy, e.clientX - cx) * 180 / Math.PI;
+  }
+  function shortDiff(a, b) {
+    var d = a - b;
+    while (d > 180) d -= 360;
+    while (d < -180) d += 360;
+    return d;
+  }
+
+  var pressed = false, startX = 0, startY = 0;
+  svg.addEventListener("pointerdown", function (e) {
+    pressed = true; dragging = false; dragDist = 0;
+    startX = e.clientX; startY = e.clientY;
+    lastA = pointerAngle(e); lastT = performance.now();
+  });
+  svg.addEventListener("pointermove", function (e) {
+    if (!pressed) return;
+    if (!dragging) {
+      /* engage drag only after real movement, so plain clicks
+         still reach the handle/hub links */
+      var moved = Math.hypot(e.clientX - startX, e.clientY - startY);
+      if (moved < 6) return;
+      dragging = true;
+      velocity = 0;
+      lastA = pointerAngle(e); lastT = performance.now();
+      svg.setPointerCapture(e.pointerId);
+      svg.classList.add("grabbing");
+      return;
+    }
+    var now = performance.now();
+    var a = pointerAngle(e);
+    var d = shortDiff(a, lastA);
+    angle += d;
+    dragDist += Math.abs(d);
+    var dt = Math.max(now - lastT, 1);
+    velocity = velocity * 0.7 + (d / dt) * 16.7 * 0.3; /* per-frame velocity, smoothed */
+    lastA = a; lastT = now;
+    if (reduceMotion) apply();
+  });
+  function endDrag() {
+    if (!pressed) return;
+    pressed = false;
+    if (!dragging) return;       /* it was a plain click — let it through */
+    dragging = false;
+    svg.classList.remove("grabbing");
+    suppressClick = true;        /* it was a drag — swallow the click */
+    setTimeout(function () { suppressClick = false; }, 0);
+  }
+  svg.addEventListener("pointerup", endDrag);
+  svg.addEventListener("pointercancel", endDrag);
+  svg.addEventListener("click", function (e) {
+    if (suppressClick) { e.preventDefault(); e.stopPropagation(); }
+  }, true);
+
+  /* keyboard: arrows rotate one handle-step, snapping cleanly */
+  svg.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+      e.preventDefault();
+      var dir = e.key === "ArrowRight" ? -1 : 1;
+      var snapped = Math.round((angle + scrollOff) / STEP) * STEP;
+      angle = snapped + dir * STEP - scrollOff;
+      velocity = 0;
+      apply();
+    } else if (e.key === "Enter") {
+      var href = hubLink.getAttribute("href");
+      if (wantsNewTab(href)) { window.open(href, "_blank", "noopener"); }
+      else { window.location.href = href; }
+    }
+  });
+
+  window.addEventListener("scroll", function () {
+    if (reduceMotion) return;
+    scrollOff = window.scrollY * SCROLL_FACTOR;
+    if (reduceMotion) apply();
+  }, { passive: true });
+
+  /* ---------- main loop ---------- */
+  if (reduceMotion) {
+    apply(); /* static wheel, still clickable + keyboard-rotatable */
+  } else {
+    var prev = performance.now();
+    (function loop(now) {
+      var dt = (now - prev) / 16.7; prev = now;
+      if (!dragging) {
+        if (Math.abs(velocity) > IDLE_DPS / 60) {
+          angle += velocity * dt;        /* coasting with inertia */
+          velocity *= Math.pow(FRICTION, dt);
+        } else {
+          angle += (IDLE_DPS / 60) * dt; /* settle into idle drift */
+        }
+      }
+      apply();
+      requestAnimationFrame(loop);
+    })(prev);
+  }
+})();
+</script>
+
+{{- end }}{{- /* end main */ -}}

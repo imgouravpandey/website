@@ -1,0 +1,8 @@
+{{- /* Project card. Context: a project page. */}}
+<a class="project-card" href="{{ .Permalink }}">
+  <h3>{{ .Title }}</h3>
+  <p>{{ .Description | default .Summary | plainify | truncate 120 }}</p>
+  <span class="card-tags">
+    {{- with .Params.tags }}{{ range first 3 . }}#{{ . }}&nbsp; {{ end }}{{ end -}}
+  </span>
+</a>

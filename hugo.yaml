@@ -1,0 +1,36 @@
+baseURL: "https://imgouravpandey.xyz/"
+title: "Gourav Pandey"
+theme: PaperMod
+enableRobotsTXT: true
+
+params:
+  defaultTheme: dark
+  disableThemeToggle: true
+  ShowReadingTime: true
+  ShowPostNavLinks: true
+  hideFooter: false
+  label:
+    text: "gourav@site:~$"
+  mainSections: ["blog"]
+  socialIcons:
+    - name: github
+      url: "https://github.com/imgouravpandey"
+    - name: linkedin
+      url: "https://www.linkedin.com/in/imgouravpandey/"
+    - name: rss
+      url: "/index.xml"
+
+menu:
+  main:
+    - name: blog
+      url: /blog/
+      weight: 10
+    - name: projects
+      url: /projects/
+      weight: 20
+    - name: docs
+      url: /docs/
+      weight: 30
+    - name: about
+      url: /about/
+      weight: 40
