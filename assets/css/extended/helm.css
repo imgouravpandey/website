@@ -240,3 +240,225 @@ a:hover { color: var(--lantern); }
   .bridge { grid-template-columns: 1fr; min-height: unset; padding-top: 2rem; }
   #helm { width: min(100%, 420px); }
 }
+
+/* ================================================================
+   EXPERIENCE PAGE
+   ================================================================ */
+.experience-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 0 4rem;
+}
+.exp-header {
+  margin-bottom: 3rem;
+}
+.exp-eyebrow {
+  color: var(--mist);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .85rem;
+  margin: 0 0 .8rem;
+  letter-spacing: .03em;
+}
+.exp-header h1 {
+  font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+  font-weight: 700;
+  color: var(--foam);
+  margin: 0 0 1rem;
+  letter-spacing: -.01em;
+}
+.exp-sub {
+  margin: 0;
+}
+.exp-sub a {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .85rem;
+}
+
+/* each role entry */
+.exp-entry {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 2rem;
+  padding: 2rem 0;
+  border-top: 1px solid var(--line);
+}
+.exp-meta {
+  display: flex;
+  flex-direction: column;
+  gap: .3rem;
+}
+.exp-dates {
+  color: var(--mist);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .82rem;
+}
+.exp-location {
+  color: var(--mist);
+  font-size: .82rem;
+}
+.exp-body h2 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--foam);
+  margin: 0 0 .2rem;
+}
+.exp-company {
+  color: var(--kblue-bright);
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0 0 1rem;
+}
+.exp-desc {
+  color: var(--mist);
+  font-size: .92rem;
+  line-height: 1.65;
+  margin: 0 0 1.2rem;
+}
+
+/* highlight pills */
+.exp-highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-bottom: 1.2rem;
+}
+.exp-hl {
+  background: rgba(50,108,229,.12);
+  border: 1px solid rgba(50,108,229,.25);
+  color: var(--kblue-bright);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .75rem;
+  padding: .3rem .7rem;
+  border-radius: 4px;
+}
+
+/* detail row: reports, teams */
+.exp-detail-row {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1rem;
+}
+.exp-detail {
+  display: flex;
+  flex-direction: column;
+  gap: .15rem;
+}
+.exp-detail-label {
+  color: var(--mist);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.exp-detail-value {
+  color: var(--foam);
+  font-size: .88rem;
+}
+
+/* skill tags */
+.exp-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+}
+.exp-skills span {
+  color: var(--mist);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .72rem;
+  background: var(--sea-2);
+  padding: .2rem .55rem;
+  border-radius: 3px;
+}
+
+@media (max-width: 700px) {
+  .exp-entry {
+    grid-template-columns: 1fr;
+    gap: .8rem;
+  }
+  .exp-detail-row {
+    flex-direction: column;
+    gap: .8rem;
+  }
+}
+
+/* ================================================================
+   CONTACT PAGE
+   ================================================================ */
+.contact-page {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 3rem 0 4rem;
+}
+.contact-eyebrow {
+  color: var(--mist);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .85rem;
+  margin: 0 0 .8rem;
+  letter-spacing: .03em;
+}
+.contact-header h1 {
+  font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+  font-weight: 700;
+  color: var(--foam);
+  margin: 0 0 1rem;
+}
+.contact-sub {
+  margin: 0 0 2.5rem;
+}
+.contact-sub a {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .85rem;
+}
+.contact-grid {
+  display: grid;
+  gap: 2rem;
+}
+.contact-block h3 {
+  color: var(--foam);
+  font-size: 1rem;
+  margin: 0 0 .8rem;
+}
+.contact-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+}
+.contact-links a {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: .9rem;
+}
+
+/* ================================================================
+   ABOUT PAGE ENHANCEMENTS
+   ================================================================ */
+.about-page .post-content h2 {
+  color: var(--kblue-bright);
+  font-size: 1.3rem;
+  margin-top: 0;
+}
+.about-page .post-content h3 {
+  color: var(--lantern);
+  font-size: 1.05rem;
+  font-family: "IBM Plex Mono", monospace;
+  margin-top: 2rem;
+}
+.about-page .post-content hr {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 1.5rem 0;
+}
+.about-page .post-content ul {
+  padding-left: 0;
+  list-style: none;
+}
+.about-page .post-content ul li {
+  padding: .3rem 0;
+  border-bottom: 1px dashed var(--line);
+  font-size: .92rem;
+}
+.about-page .post-content ul li:last-child {
+  border-bottom: none;
+}

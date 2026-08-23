@@ -9,6 +9,8 @@ params:
   ShowReadingTime: true
   ShowPostNavLinks: true
   hideFooter: false
+  description: "Senior DevOps Engineer | Kubernetes, AWS, Terraform, CI/CD | 7+ years in cloud infrastructure"
+  author: "Gourav Kumar Pandey"
   label:
     text: "gourav@site:~$"
   mainSections: ["blog"]
@@ -22,15 +24,18 @@ params:
 
 menu:
   main:
-    - name: blog
-      url: /blog/
-      weight: 10
-    - name: projects
-      url: /projects/
-      weight: 20
-    - name: docs
-      url: /docs/
-      weight: 30
     - name: about
       url: /about/
+      weight: 10
+    - name: experience
+      url: /experience/
+      weight: 20
+    - name: projects
+      url: /projects/
+      weight: 30
+    - name: blog
+      url: /blog/
       weight: 40
+    - name: contact
+      url: /contact/
+      weight: 50
