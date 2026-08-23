@@ -1,7 +1,7 @@
 /* ================================================================
    gouravpandey.dev — "the bridge" · helm / deep-ocean ops design
    Palette: deep sea navy base, Kubernetes-blue primary accent,
-   lantern amber secondary. Chrome: IBM Plex Mono. Body: Plex Sans.
+   lantern amber secondary. Chrome: JetBrains Mono. Body: Inter.
    PaperMod auto-bundles every file in assets/css/extended/.
    ================================================================ */
 
@@ -15,6 +15,7 @@
   --kblue-bright: #6a97f2;
   --lantern: #f0a83c; /* amber, secondary accent */
   --line:  #1a2c47;   /* hairline borders */
+  --depth: 0;         /* 0 = surface, 1 = abyss; set by JS on scroll */
 }
 
 /* ---------- PaperMod dark-theme variable overrides ---------- */
@@ -31,21 +32,38 @@
 }
 
 body {
-  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  font-size: 16.5px;
+  line-height: 1.7;
+  letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   background:
     radial-gradient(1100px 520px at 75% -80px, rgba(50,108,229,.10), transparent 60%),
     var(--sea-0);
+  /* depth gradient: gets darker as you scroll deeper */
+  background-color: color-mix(in srgb, var(--sea-0) calc(100% - var(--depth) * 55%), #010509 calc(var(--depth) * 55%));
+  transition: background-color .4s linear;
 }
 code, pre, kbd, .post-meta, .bridge-eyebrow, .bridge-status,
 .home-section-head h2, .post-row-date, .post-row-tag, .helm-hint {
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+/* improve readability of body copy */
+.post-content p, .post-content li {
+  font-size: 1.02rem;
+  line-height: 1.75;
+  color: #c9d8e8;
+}
+.post-content h1, .post-content h2, .post-content h3 {
+  letter-spacing: -0.015em;
 }
 a { color: var(--kblue-bright); }
 a:hover { color: var(--lantern); }
 
 /* ---------- header ---------- */
 .header { border-bottom: 1px solid var(--line); }
-.logo a { color: var(--kblue-bright); font-family: "IBM Plex Mono", monospace; }
+.logo a { color: var(--kblue-bright); font-family: "JetBrains Mono", monospace; }
 
 /* ================================================================
    THE BRIDGE — hero
@@ -103,7 +121,7 @@ a:hover { color: var(--lantern); }
 .handle.is-top { stroke: var(--lantern); }
 
 .handle-label {
-  fill: var(--mist); font-family: "IBM Plex Mono", monospace;
+  fill: var(--mist); font-family: "JetBrains Mono", monospace;
   font-size: 15px; letter-spacing: .03em;
   transition: fill .18s ease;
 }
@@ -114,7 +132,7 @@ a:hover { color: var(--lantern); }
 .hub-ring { fill: none; stroke: var(--line); stroke-width: 1.5; }
 .hub-dir  { fill: var(--lantern); font-size: 15px; }
 .hub-label {
-  fill: var(--foam); font-family: "IBM Plex Mono", monospace;
+  fill: var(--foam); font-family: "JetBrains Mono", monospace;
   font-size: 17px; font-weight: 600; letter-spacing: .02em;
 }
 #hub-link { cursor: pointer; }
@@ -150,7 +168,7 @@ a:hover { color: var(--lantern); }
 .home-section-head h2 { font-size: 1rem; font-weight: 600; color: var(--foam); margin: 0; }
 .sec-mark { color: var(--kblue-bright); margin-right: .35rem; }
 .sec-dim  { color: var(--mist); font-weight: 400; }
-.home-section-link { font-family: "IBM Plex Mono", monospace; font-size: .8rem; }
+.home-section-link { font-family: "JetBrains Mono", monospace; font-size: .8rem; }
 
 /* ---------- project cards ---------- */
 .projects-grid {
@@ -170,7 +188,7 @@ a:hover { color: var(--lantern); }
 }
 .project-card h3 { color: var(--foam); font-size: 1rem; margin: 0 0 .4rem; }
 .project-card p  { color: var(--mist); font-size: .88rem; line-height: 1.55; margin: 0 0 .6rem; }
-.project-card .card-tags { font-family: "IBM Plex Mono", monospace; font-size: .72rem; color: var(--kblue-bright); }
+.project-card .card-tags { font-family: "JetBrains Mono", monospace; font-size: .72rem; color: var(--kblue-bright); }
 
 /* ---------- post rows (captain's log) ---------- */
 .post-rows { display: flex; flex-direction: column; }
@@ -254,7 +272,7 @@ a:hover { color: var(--lantern); }
 }
 .exp-eyebrow {
   color: var(--mist);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: .85rem;
   margin: 0 0 .8rem;
   letter-spacing: .03em;
@@ -270,7 +288,7 @@ a:hover { color: var(--lantern); }
   margin: 0;
 }
 .exp-sub a {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: .85rem;
 }
 
@@ -289,7 +307,7 @@ a:hover { color: var(--lantern); }
 }
 .exp-dates {
   color: var(--mist);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: .82rem;
 }
 .exp-location {
@@ -326,7 +344,7 @@ a:hover { color: var(--lantern); }
   background: rgba(50,108,229,.12);
   border: 1px solid rgba(50,108,229,.25);
   color: var(--kblue-bright);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: .75rem;
   padding: .3rem .7rem;
   border-radius: 4px;
@@ -345,7 +363,7 @@ a:hover { color: var(--lantern); }
 }
 .exp-detail-label {
   color: var(--mist);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: .72rem;
   text-transform: uppercase;
   letter-spacing: .05em;
@@ -363,7 +381,7 @@ a:hover { color: var(--lantern); }
 }
 .exp-skills span {
   color: var(--mist);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: .72rem;
   background: var(--sea-2);
   padding: .2rem .55rem;
@@ -391,7 +409,7 @@ a:hover { color: var(--lantern); }
 }
 .contact-eyebrow {
   color: var(--mist);
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: .85rem;
   margin: 0 0 .8rem;
   letter-spacing: .03em;
@@ -406,7 +424,7 @@ a:hover { color: var(--lantern); }
   margin: 0 0 2.5rem;
 }
 .contact-sub a {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: .85rem;
 }
 .contact-grid {
@@ -427,7 +445,7 @@ a:hover { color: var(--lantern); }
   gap: .6rem;
 }
 .contact-links a {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: .9rem;
 }
 
@@ -442,7 +460,7 @@ a:hover { color: var(--lantern); }
 .about-page .post-content h3 {
   color: var(--lantern);
   font-size: 1.05rem;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "JetBrains Mono", monospace;
   margin-top: 2rem;
 }
 .about-page .post-content hr {
@@ -461,4 +479,130 @@ a:hover { color: var(--lantern); }
 }
 .about-page .post-content ul li:last-child {
   border-bottom: none;
+}
+
+/* ================================================================
+   SPOTLIGHT CURSOR — submarine lamp
+   ================================================================ */
+.spotlight {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 620px;
+  height: 620px;
+  margin-left: -310px;
+  margin-top: -310px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity .5s ease;
+  background: radial-gradient(
+    circle closest-side,
+    rgba(106,151,242,.13) 0%,
+    rgba(50,108,229,.07) 38%,
+    rgba(50,108,229,.025) 62%,
+    transparent 100%
+  );
+  will-change: transform;
+}
+/* content sits above the light */
+.main, .header, .footer { position: relative; z-index: 2; }
+
+@media (prefers-reduced-motion: reduce) {
+  .spotlight { display: none; }
+}
+@media (pointer: coarse) {
+  .spotlight { display: none; }
+}
+
+/* ================================================================
+   DOCKED MINI HELM — persistent nav wheel
+   ================================================================ */
+.helm-dock {
+  position: fixed;
+  right: 26px;
+  bottom: 26px;
+  width: 118px;
+  height: 118px;
+  z-index: 60;
+  opacity: 0;
+  transform: translateY(18px) scale(.85);
+  pointer-events: none;
+  transition: opacity .45s cubic-bezier(.2,.8,.2,1), transform .45s cubic-bezier(.2,.8,.2,1);
+}
+.helm-dock.docked {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+.helm-dock:hover {
+  transform: translateY(0) scale(1.06);
+}
+#helm-mini {
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+  outline: none;
+  filter: drop-shadow(0 6px 22px rgba(3,10,22,.7)) drop-shadow(0 0 16px rgba(50,108,229,.2));
+}
+#helm-mini.grabbing { cursor: grabbing; }
+#helm-mini:focus-visible {
+  filter: drop-shadow(0 0 14px rgba(240,168,60,.6));
+}
+/* mini wheel scales down stroke weights so it reads clearly at 118px */
+#helm-mini .rim-outer { stroke-width: 30; }
+#helm-mini .rim-inner { stroke-width: 5; }
+#helm-mini .spoke     { stroke-width: 20; }
+#helm-mini .handle    { stroke-width: 28; }
+#helm-mini .rivet     { r: 6; }
+#helm-mini .hub       { stroke-width: 5; }
+#helm-mini .hub-ring  { stroke-width: 2.5; }
+#helm-mini .hub-dir   { font-size: 26px; }
+#helm-mini .hub-label {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 30px;
+  font-weight: 600;
+}
+
+@media (max-width: 820px) {
+  .helm-dock {
+    right: 14px;
+    bottom: 14px;
+    width: 88px;
+    height: 88px;
+  }
+}
+
+/* ================================================================
+   TYPOGRAPHY REFINEMENTS
+   ================================================================ */
+.bridge-title {
+  letter-spacing: -0.03em;
+  font-weight: 700;
+}
+.bridge-sub {
+  font-size: 1.08rem;
+  line-height: 1.7;
+  color: #a8bdd4;
+}
+.exp-desc {
+  font-size: .96rem;
+  line-height: 1.72;
+  color: #b0c3d8;
+}
+.project-card p {
+  font-size: .9rem;
+  line-height: 1.62;
+  color: #a8bdd4;
+}
+.post-row-title {
+  font-size: .98rem;
+  letter-spacing: -0.005em;
+}
+.handle-label {
+  font-family: "JetBrains Mono", monospace;
+}
+.hub-label {
+  font-family: "JetBrains Mono", monospace;
 }

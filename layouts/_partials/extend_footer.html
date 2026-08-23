@@ -1,0 +1,254 @@
+{{- /* ============================================================
+     SPOTLIGHT CURSOR — submarine lamp effect
+     ============================================================ */}}
+<div class="spotlight" id="spotlight" aria-hidden="true"></div>
+
+{{- /* ============================================================
+     DOCKED HELM — mini wheel nav, appears after scrolling past hero
+     ============================================================ */}}
+<div class="helm-dock" id="helm-dock" aria-hidden="false">
+  <svg id="helm-mini" viewBox="0 0 640 640" role="group" aria-label="Ship's wheel navigation. Arrow keys rotate, Enter opens." tabindex="0">
+    <defs>
+      <radialGradient id="hubGlowMini" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#12233f"/>
+        <stop offset="100%" stop-color="#0b1626"/>
+      </radialGradient>
+    </defs>
+    <g id="helm-rot-mini">
+      <circle class="rim-outer" cx="320" cy="320" r="205"/>
+      <circle class="rim-inner" cx="320" cy="320" r="180"/>
+      <g class="rivets" id="rivets-mini"></g>
+      <g id="spokes-mini"></g>
+    </g>
+    <a id="hub-link-mini" href="/about/" aria-label="Open selected section">
+      <circle class="hub" cx="320" cy="320" r="62"/>
+      <circle class="hub-ring" cx="320" cy="320" r="46"/>
+      <text class="hub-dir" x="320" y="306" text-anchor="middle">↑</text>
+      <text class="hub-label" id="hub-label-mini" x="320" y="340" text-anchor="middle">about</text>
+    </a>
+  </svg>
+</div>
+
+<script>
+(function() {
+  "use strict";
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ============ SPOTLIGHT CURSOR ============ */
+  var spot = document.getElementById("spotlight");
+  if (spot && window.matchMedia("(pointer: fine)").matches) {
+    var sx = window.innerWidth / 2, sy = window.innerHeight / 2;
+    var tx = sx, ty = sy;
+    document.addEventListener("pointermove", function(e) {
+      tx = e.clientX; ty = e.clientY;
+      spot.style.opacity = "1";
+    }, { passive: true });
+    document.addEventListener("pointerleave", function() {
+      spot.style.opacity = "0";
+    });
+    (function follow() {
+      /* ease toward the pointer so the light lags slightly, like a lamp */
+      sx += (tx - sx) * 0.14;
+      sy += (ty - sy) * 0.14;
+      spot.style.transform = "translate(" + sx + "px," + sy + "px)";
+      requestAnimationFrame(follow);
+    })();
+  } else if (spot) {
+    spot.style.display = "none";
+  }
+
+  /* ============ DEPTH GRADIENT ON SCROLL ============ */
+  function updateDepth() {
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    var p = h > 0 ? Math.min(window.scrollY / h, 1) : 0;
+    document.documentElement.style.setProperty("--depth", p.toFixed(3));
+  }
+  window.addEventListener("scroll", updateDepth, { passive: true });
+  window.addEventListener("resize", updateDepth);
+  updateDepth();
+
+  /* ============ DOCKED MINI HELM ============ */
+  var SECTIONS = [
+    { label: "about",      href: "/about/" },
+    { label: "experience", href: "/experience/" },
+    { label: "projects",   href: "/projects/" },
+    { label: "blog",       href: "/blog/" },
+    { label: "contact",    href: "/contact/" },
+    { label: "github",     href: "https://github.com/imgouravpandey" },
+    { label: "linkedin",   href: "https://www.linkedin.com/in/imgouravpandey/" }
+  ];
+
+  var svg = document.getElementById("helm-mini");
+  var dock = document.getElementById("helm-dock");
+  if (!svg || !dock) return;
+  var rot = document.getElementById("helm-rot-mini");
+  var spokesG = document.getElementById("spokes-mini");
+  var rivetsG = document.getElementById("rivets-mini");
+  var hubLabel = document.getElementById("hub-label-mini");
+  var hubLink = document.getElementById("hub-link-mini");
+
+  var N = SECTIONS.length, STEP = 360 / N;
+  var CX = 320, CY = 320;
+  var R_HUB = 62, R_RIM = 205, R_HANDLE_END = 268;
+  var NS = "http://www.w3.org/2000/svg";
+
+  function polar(r, deg) {
+    var a = deg * Math.PI / 180;
+    return [CX + r * Math.cos(a), CY + r * Math.sin(a)];
+  }
+
+  var handleEls = [];
+  for (var i = 0; i < N; i++) {
+    var baseA = i * STEP - 90;
+    var a = document.createElementNS(NS, "a");
+    a.setAttribute("href", SECTIONS[i].href);
+    a.setAttribute("class", "handle-link");
+    a.setAttribute("aria-label", SECTIONS[i].label);
+    if (/^https?:/.test(SECTIONS[i].href)) {
+      a.setAttribute("target", "_blank");
+      a.setAttribute("rel", "noopener");
+    }
+
+    var p1 = polar(R_HUB - 4, baseA), p2 = polar(R_RIM - 10, baseA);
+    var spoke = document.createElementNS(NS, "line");
+    spoke.setAttribute("x1", p1[0]); spoke.setAttribute("y1", p1[1]);
+    spoke.setAttribute("x2", p2[0]); spoke.setAttribute("y2", p2[1]);
+    spoke.setAttribute("class", "spoke");
+    a.appendChild(spoke);
+
+    var h1 = polar(R_RIM + 2, baseA), h2 = polar(R_HANDLE_END, baseA);
+    var handle = document.createElementNS(NS, "line");
+    handle.setAttribute("x1", h1[0]); handle.setAttribute("y1", h1[1]);
+    handle.setAttribute("x2", h2[0]); handle.setAttribute("y2", h2[1]);
+    handle.setAttribute("class", "handle");
+    a.appendChild(handle);
+    handleEls.push(handle);
+
+    spokesG.appendChild(a);
+
+    var rv = polar((R_RIM + 205) / 2, baseA + STEP / 2);
+    var c = document.createElementNS(NS, "circle");
+    c.setAttribute("cx", rv[0]); c.setAttribute("cy", rv[1]);
+    c.setAttribute("r", 5); c.setAttribute("class", "rivet");
+    rivetsG.appendChild(c);
+  }
+
+  var angle = 0, velocity = 0;
+  var dragging = false, pressed = false, lastA = 0, lastT = 0;
+  var startX = 0, startY = 0, suppressClick = false;
+  var IDLE_DPS = 360 / 100, FRICTION = 0.985;
+
+  function apply() {
+    rot.setAttribute("transform", "rotate(" + angle + " " + CX + " " + CY + ")");
+    var idx = ((Math.round(-angle / STEP) % N) + N) % N;
+    if (hubLabel.textContent !== SECTIONS[idx].label) {
+      hubLabel.textContent = SECTIONS[idx].label;
+      hubLink.setAttribute("href", SECTIONS[idx].href);
+      if (/^https?:/.test(SECTIONS[idx].href)) {
+        hubLink.setAttribute("target", "_blank");
+        hubLink.setAttribute("rel", "noopener");
+      } else {
+        hubLink.removeAttribute("target");
+      }
+      for (var j = 0; j < N; j++) {
+        handleEls[j].classList.toggle("is-top", j === idx);
+      }
+    }
+  }
+
+  function pointerAngle(e) {
+    var r = svg.getBoundingClientRect();
+    var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    return Math.atan2(e.clientY - cy, e.clientX - cx) * 180 / Math.PI;
+  }
+  function shortDiff(a, b) {
+    var d = a - b;
+    while (d > 180) d -= 360;
+    while (d < -180) d += 360;
+    return d;
+  }
+
+  svg.addEventListener("pointerdown", function(e) {
+    pressed = true; dragging = false;
+    startX = e.clientX; startY = e.clientY;
+    lastA = pointerAngle(e); lastT = performance.now();
+  });
+  svg.addEventListener("pointermove", function(e) {
+    if (!pressed) return;
+    if (!dragging) {
+      if (Math.hypot(e.clientX - startX, e.clientY - startY) < 6) return;
+      dragging = true; velocity = 0;
+      lastA = pointerAngle(e); lastT = performance.now();
+      svg.setPointerCapture(e.pointerId);
+      svg.classList.add("grabbing");
+      return;
+    }
+    var now = performance.now();
+    var a2 = pointerAngle(e);
+    var d = shortDiff(a2, lastA);
+    angle += d;
+    var dt = Math.max(now - lastT, 1);
+    velocity = velocity * 0.7 + (d / dt) * 16.7 * 0.3;
+    lastA = a2; lastT = now;
+    if (reduceMotion) apply();
+  });
+  function endDrag() {
+    if (!pressed) return;
+    pressed = false;
+    if (!dragging) return;
+    dragging = false;
+    svg.classList.remove("grabbing");
+    suppressClick = true;
+    setTimeout(function() { suppressClick = false; }, 0);
+  }
+  svg.addEventListener("pointerup", endDrag);
+  svg.addEventListener("pointercancel", endDrag);
+  svg.addEventListener("click", function(e) {
+    if (suppressClick) { e.preventDefault(); e.stopPropagation(); }
+  }, true);
+
+  svg.addEventListener("keydown", function(e) {
+    if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+      e.preventDefault();
+      var dir = e.key === "ArrowRight" ? -1 : 1;
+      angle = Math.round(angle / STEP) * STEP + dir * STEP;
+      velocity = 0;
+      apply();
+    } else if (e.key === "Enter") {
+      var href = hubLink.getAttribute("href");
+      if (/^https?:/.test(href)) window.open(href, "_blank", "noopener");
+      else window.location.href = href;
+    }
+  });
+
+  /* show the dock only after scrolling past the hero (or immediately on inner pages) */
+  var isHome = document.querySelector(".bridge") !== null;
+  function updateDock() {
+    if (!isHome) { dock.classList.add("docked"); return; }
+    var hero = document.querySelector(".bridge");
+    var threshold = hero ? hero.offsetHeight * 0.7 : 400;
+    dock.classList.toggle("docked", window.scrollY > threshold);
+  }
+  window.addEventListener("scroll", updateDock, { passive: true });
+  updateDock();
+
+  if (reduceMotion) {
+    apply();
+  } else {
+    var prev = performance.now();
+    (function loop(now) {
+      var dt = (now - prev) / 16.7; prev = now;
+      if (!dragging) {
+        if (Math.abs(velocity) > IDLE_DPS / 60) {
+          angle += velocity * dt;
+          velocity *= Math.pow(FRICTION, dt);
+        } else {
+          angle += (IDLE_DPS / 60) * dt;
+        }
+      }
+      apply();
+      requestAnimationFrame(loop);
+    })(prev);
+  }
+})();
+</script>
